@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Dispo ?"
+version = "1.0.0"
+id = "artifacts/dispo"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23439
+
+[services.development]
+run = "pnpm --filter @workspace/dispo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dispo", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/dispo/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23439"
+BASE_PATH = "/"

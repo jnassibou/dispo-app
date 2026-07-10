@@ -1,0 +1,43 @@
+Agis comme un développeur Full-Stack expert (React, Next.js, Tailwind CSS) et un UI/UX designer spécialisé dans les applications mobiles pour la Gen Z.
+
+Ton objectif est de mettre à jour le MVP de la Web App "Dispo ?". L'application aide les groupes d'amis à s'organiser sans friction.
+Le design est "mobile-first", en mode sombre (fond noir/très sombre), avec des accents de couleurs néon (violet, jaune), des boutons très arrondis, et des animations fluides (framer-motion).
+
+Voici les spécifications exactes de l'interface et des fonctionnalités à coder :
+
+HEADER GLOBAL (Sticky)
+
+Sur TOUTES les pages, ajoute un header fixe en haut de l'écran avec le logo "✌️ Dispo ?".
+
+Le texte doit avoir un léger effet de glow (néon) blanc/violet pour rappeler l'ambiance nocturne/soirée.
+
+PAGE DE CRÉATION (Vue Organisateur)
+
+Étape 1 : L'organisateur choisit le type d'événement via 3 gros boutons stylés :
+👉 "🗓️ Trouver une date"
+👉 "🎯 Choisir une activité"
+👉 "🔥 Les deux !"
+
+Étape 2 (Si date sélectionnée) : Un sélecteur de mois sous forme de bouton déroulant. Une fois le mois choisi, l'organisateur peut taper/sélectionner plusieurs dates précises dans ce mois.
+
+Étape 3 : Nom de l'événement et choix de l'émoji. Génération du lien de partage.
+
+PAGE DES DISPONIBILITÉS (Vue Invité - La Matrice)
+
+L'UI de la grille de sélection doit être inversée par rapport à un calendrier classique pour optimiser le scroll vertical sur mobile :
+
+Axe Horizontal (En haut, les colonnes) : Les 4 créneaux fixes : "Matin 🌅", "Aprem ☀️", "Soir 🌇", "Nuit 🌙".
+
+Axe Vertical (À gauche, les lignes) : Les dates sélectionnées par l'organisateur (ex: "Ven. 10", "Sam. 11"). Le scroll vertical doit être infini/fluide si l'orga a mis beaucoup de dates.
+
+Interaction : L'invité tapote sur les cases de la grille pour se mettre "dispo". Les cases sélectionnées s'allument (fill avec un dégradé néon violet/rose) avec un effet de scale/bounce.
+
+Un gros bouton flottant (Sticky Bottom) "Sauvegarder ✨" en bas de l'écran.
+
+ALGORITHME DE MATCH & SWIPE D'ACTIVITÉS
+
+(Garde la logique de scoring pour trouver le créneau où le maximum de personnes sont disponibles).
+
+Si le mode "Activité" est activé, intègre une interface type Tinder (Swipe Cards) où les invités swipent à droite (Chaud) ou à gauche (Non) sur des suggestions d'activités. L'app calcule ensuite l'activité avec le plus de matchs.
+
+Code en priorité la structure globale (Layout avec le Header), la nouvelle page de création avec les 3 choix, et la nouvelle Matrice inversée (Dates en Y, Créneaux en X). Assure-toi que la grille soit parfaitement responsive sur un petit écran d'iPhone.
