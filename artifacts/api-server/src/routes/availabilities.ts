@@ -117,10 +117,12 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
     return;
   }
 
-  const [{ totalParticipants }] = await db
-    .select({ totalParticipants: sql<number>`count(*)::int` })
+  const allParticipants = await db
+    .select()
     .from(participantsTable)
     .where(eq(participantsTable.eventId, event.id));
+
+  const totalParticipants = allParticipants.length;
 
   const slots = await db
     .select()
@@ -135,6 +137,7 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
         participantCount: 0,
         totalParticipants,
         hasMatch: false,
+        absentNames: [],
       })
     );
     return;
@@ -153,7 +156,12 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
   );
   const best = sorted[0];
   const [bestDate, bestTimeBlock] = best[0].split("|");
-  const participantCount = best[1].size;
+  const presentIds = best[1];
+  const participantCount = presentIds.size;
+
+  const absentNames = allParticipants
+    .filter((p) => !presentIds.has(p.id))
+    .map((p) => p.name);
 
   res.json(
     GetBestSlotResponse.parse({
@@ -162,6 +170,7 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
       participantCount,
       totalParticipants,
       hasMatch: participantCount === totalParticipants,
+      absentNames,
     })
   );
 });

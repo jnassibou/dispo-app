@@ -1,0 +1,36 @@
+L'interface est super belle, l'ambiance sombre/néon est validée. Cependant, il y a 4 problèmes de logique et d'expérience utilisateur (UX) à corriger sur le tableau de bord de l'événement et la page des résultats.
+
+Voici les modifications à appliquer immédiatement :
+
+Correction du choix "Type d'événement" (Conditionnel) :
+Sur le tableau de bord de l'événement (où on voit "Disponibilités", "On fait quoi", "Résultats"), tu DOIS respecter le choix initial de l'organisateur.
+
+Si l'organisateur a choisi UNIQUEMENT "Date", cache complètement le bouton "On fait quoi ? (Swipe)" et la section "Top Activités" dans les résultats.
+
+Si l'organisateur a choisi UNIQUEMENT "Activité", cache la partie calendrier.
+
+Bouton de Partage d'Invitation (Tableau de bord) :
+Sur le tableau de bord principal de l'événement (là où on voit la liste des participants "Dans le groupe"), ajoute un gros bouton bien visible "Inviter mes potes 🔗".
+Au clic, ce bouton doit utiliser l'API Web Share (navigator.share) si disponible sur mobile, ou copier le lien de l'URL actuelle dans le presse-papier avec un petit toast de confirmation ("Lien copié !").
+
+Le Générateur de "Sticker" (Page Résultats) :
+Sur la page "Le Verdict / Résultats", ajoute un gros bouton stylé (avec un dégradé ou une bordure néon) : "Partager le plan 🔥" ou "Partager dans le groupe 💬".
+Au clic, génère un texte sympa (notre "Sticker" textuel) et copie-le directement dans le presse-papier de l'utilisateur pour qu'il puisse le coller sur WhatsApp/Insta.
+Le format du texte copié doit ressembler à ça :
+"""
+✌️ [Nom de l'événement]
+📅 [Date gagnante] - [Créneau gagnant]
+👯 [X]/[Y] dispos !
+C'est validé, on se capte ! ✨
+"""
+
+Gestion des absences (Pas de message d'erreur !) :
+Actuellement, si personne n'est dispo, ou si on n'atteint pas 100% de présence, l'expérience est frustrante.
+Modifie la logique d'affichage du "Meilleur Créneau" :
+
+Sélectionne TOUJOURS le créneau qui a le PLUS de personnes disponibles (même si c'est seulement 3 sur 5).
+
+Si le créneau gagnant a 100% de dispo : Affiche un badge "Parfait 🏆".
+
+Si le créneau gagnant n'a PAS tout le monde (ex: 4 sur 5) : N'affiche AUCUN message d'erreur. À la place de "4/5 dispos", ajoute une phrase dynamique : "Tout le monde est dispo sauf [Nom de la personne absente] 😅".
+Pour faire ça, déduis les noms manquants en comparant la liste de tous les participants avec la liste de ceux qui ont coché ce créneau.

@@ -153,7 +153,8 @@ export const GetBestSlotResponse = zod.object({
   "timeBlock": zod.string().nullable(),
   "participantCount": zod.number(),
   "totalParticipants": zod.number(),
-  "hasMatch": zod.boolean().optional()
+  "hasMatch": zod.boolean().optional(),
+  "absentNames": zod.array(zod.string()).optional()
 })
 
 

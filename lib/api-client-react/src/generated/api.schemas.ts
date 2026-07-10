@@ -73,6 +73,7 @@ export interface BestSlot {
   participantCount: number;
   totalParticipants: number;
   hasMatch?: boolean;
+  absentNames?: string[];
 }
 
 export interface Activity {
