@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useCreateEvent } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronLeft, Loader2 } from "lucide-react"
+import { ChevronLeft, Loader2, Copy, Check } from "lucide-react"
 import { format, getDaysInMonth, startOfMonth, addMonths, isSameDay } from "date-fns"
 import { fr } from "date-fns/locale"
 
@@ -15,6 +15,7 @@ const EMOJIS = [
 ]
 
 type Mode = "date" | "activity" | "both"
+type Step = 1 | 2 | 3 | 4
 
 const MODES: { id: Mode; label: string; emoji: string; desc: string }[] = [
   { id: "date", emoji: "🗓️", label: "Trouver une date", desc: "Vote pour les créneaux dispo" },
@@ -24,12 +25,14 @@ const MODES: { id: Mode; label: string; emoji: string; desc: string }[] = [
 
 export default function CreateEvent() {
   const [, setLocation] = useLocation()
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<Step>(1)
   const [mode, setMode] = useState<Mode>("both")
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDates, setSelectedDates] = useState<Date[]>([])
   const [name, setName] = useState("")
   const [emoji, setEmoji] = useState("🎉")
+  const [createdShareCode, setCreatedShareCode] = useState("")
+  const [copied, setCopied] = useState(false)
 
   const createEvent = useCreateEvent()
 
@@ -62,8 +65,30 @@ export default function CreateEvent() {
 
     createEvent.mutate(
       { data: { name, emoji, mode, dates: isoDateStrings } },
-      { onSuccess: (event) => setLocation(`/event/${event.shareCode}`) }
+      {
+        onSuccess: (event) => {
+          setCreatedShareCode(event.shareCode)
+          setStep(4)
+        }
+      }
     )
+  }
+
+  // ── Step 4: share ────────────────────────────────────────────────────────────
+  const shareUrl = typeof window !== "undefined"
+    ? `${window.location.origin}${import.meta.env.BASE_URL}event/${createdShareCode}`
+    : ""
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `${emoji} ${name}`, text: "Rejoins notre plan sur Dispo ?", url: shareUrl })
+      } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    }
   }
 
   const slideVariants = {
@@ -74,30 +99,32 @@ export default function CreateEvent() {
 
   return (
     <div className="flex-1 w-full p-6 flex flex-col">
-      {/* Back button */}
-      <div className="mb-6 flex items-center gap-3">
-        <button
-          onClick={() => {
-            if (step === 1) setLocation("/")
-            else if (step === 2) setStep(1)
-            else setStep(mode === "activity" ? 1 : 2)
-          }}
-          className="w-10 h-10 rounded-full bg-card border border-card-border flex items-center justify-center text-muted-foreground hover:text-white transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        {/* Step dots */}
-        <div className="flex gap-1.5">
-          {[1, 2, 3].map(s => (
-            <div
-              key={s}
-              className={`h-1.5 rounded-full transition-all ${
-                s === step ? "w-6 bg-primary neon-shadow-primary" : s < step ? "w-3 bg-primary/50" : "w-3 bg-card-border"
-              }`}
-            />
-          ))}
+      {/* Back / step indicator — hidden on success screen */}
+      {step !== 4 && (
+        <div className="mb-6 flex items-center gap-3">
+          <button
+            onClick={() => {
+              if (step === 1) setLocation("/")
+              else if (step === 2) setStep(1)
+              else setStep(mode === "activity" ? 1 : 2)
+            }}
+            className="w-10 h-10 rounded-full bg-card border border-card-border flex items-center justify-center text-muted-foreground hover:text-white transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          {/* Step dots */}
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map(s => (
+              <div
+                key={s}
+                className={`h-1.5 rounded-full transition-all ${
+                  s === step ? "w-6 bg-primary neon-shadow-primary" : s < step ? "w-3 bg-primary/50" : "w-3 bg-card-border"
+                }`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <AnimatePresence mode="wait">
         {/* ── STEP 1: Mode ── */}
@@ -314,6 +341,87 @@ export default function CreateEvent() {
                 </Button>
               </div>
             </form>
+          </motion.div>
+        )}
+        {/* ── STEP 4: Success + Share ── */}
+        {step === 4 && (
+          <motion.div
+            key="step4"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+            className="flex-1 flex flex-col items-center justify-center text-center gap-8 relative"
+          >
+            {/* Background glow */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[80px]" />
+              <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-secondary/15 rounded-full blur-[70px]" />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center gap-6">
+              <motion.div
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 14, delay: 0.1 }}
+                className="text-8xl"
+              >
+                {emoji}
+              </motion.div>
+
+              <div className="space-y-2">
+                <h1 className="text-4xl font-black text-white">C'est prêt ! 🎉</h1>
+                <p className="text-xl font-bold" style={{
+                  background: "linear-gradient(90deg, #a78bfa, #f472b6)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}>
+                  {name}
+                </p>
+              </div>
+
+              {/* Share URL pill */}
+              <div className="w-full max-w-xs px-4 py-2.5 rounded-2xl bg-card border border-card-border text-sm text-muted-foreground font-mono truncate">
+                {shareUrl}
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="relative z-10 w-full space-y-3">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Button
+                  size="lg"
+                  className="w-full h-16 text-lg rounded-full gap-2"
+                  onClick={handleShare}
+                  style={{
+                    background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))",
+                    boxShadow: "0 0 32px 0 hsla(var(--primary) / 0.45)",
+                  }}
+                >
+                  {copied
+                    ? <><Check className="w-5 h-5" /> Lien copié !</>
+                    : <>Partager aux potes 📲</>
+                  }
+                </Button>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.45 }}
+              >
+                <Button
+                  variant="ghost"
+                  className="w-full h-12 text-muted-foreground hover:text-white"
+                  onClick={() => setLocation(`/event/${createdShareCode}`)}
+                >
+                  Voir l'événement →
+                </Button>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
