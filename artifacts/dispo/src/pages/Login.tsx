@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useLocation } from "wouter"
+import { useLocation, useSearch } from "wouter"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,9 @@ export function getStoredUser(): string | null {
 
 export default function Login() {
   const [, setLocation] = useLocation()
+  const search = useSearch()
+  const nextParam = new URLSearchParams(search).get("next") ?? "/dashboard"
+
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -21,14 +24,13 @@ export default function Login() {
     e.preventDefault()
     if (!email.trim()) return
     setLoading(true)
-    // Mock: simulate magic link send
     setTimeout(() => {
       setLoading(false)
       setSent(true)
-      // Simulate clicking the link after 2s
+      // Simulate clicking the magic link after 2s → redirect to next
       setTimeout(() => {
         localStorage.setItem(USER_KEY, email.trim())
-        setLocation("/dashboard")
+        setLocation(nextParam)
       }, 2000)
     }, 1200)
   }
