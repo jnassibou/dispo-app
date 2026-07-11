@@ -148,13 +148,21 @@ export const GetBestSlotParams = zod.object({
   "shareCode": zod.coerce.string()
 })
 
+export const GetBestSlotTopSlotsItem = zod.object({
+  "date": zod.string(),
+  "timeBlock": zod.string(),
+  "participantCount": zod.number(),
+  "absentNames": zod.array(zod.string()),
+})
+
 export const GetBestSlotResponse = zod.object({
   "date": zod.string().nullable(),
   "timeBlock": zod.string().nullable(),
   "participantCount": zod.number(),
   "totalParticipants": zod.number(),
   "hasMatch": zod.boolean().optional(),
-  "absentNames": zod.array(zod.string()).optional()
+  "absentNames": zod.array(zod.string()).optional(),
+  "topSlots": zod.array(GetBestSlotTopSlotsItem).optional(),
 })
 
 

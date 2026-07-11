@@ -69,6 +69,17 @@ export default function CreateEvent() {
         onSuccess: (event) => {
           setCreatedShareCode(event.shareCode)
           setStep(4)
+          // Persist to dashboard list + mark this device as the creator
+          import("@/hooks/use-my-events").then(({ persistMyEvent, markAsCreator }) => {
+            persistMyEvent({
+              shareCode: event.shareCode,
+              name,
+              emoji,
+              mode,
+              createdAt: new Date().toISOString(),
+            })
+            markAsCreator(event.shareCode)
+          })
         }
       }
     )

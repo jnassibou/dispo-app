@@ -31,7 +31,15 @@ export default function EventHub() {
     if (!joinName.trim()) return
     joinEvent.mutate(
       { shareCode, data: { name: joinName } },
-      { onSuccess: (p) => saveParticipant(p.id, p.name) }
+      {
+        onSuccess: (p) => {
+          saveParticipant(p.id, p.name)
+          // If this device created the event, record the organizer participant ID
+          import("@/hooks/use-my-events").then(({ isCreator, setOrganizerParticipantId }) => {
+            if (isCreator(shareCode)) setOrganizerParticipantId(shareCode, p.id)
+          })
+        }
+      }
     )
   }
 

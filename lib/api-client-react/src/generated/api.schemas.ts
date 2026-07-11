@@ -65,6 +65,13 @@ export interface AvailabilityInput {
   slots: AvailabilityInputSlotsItem[];
 }
 
+export interface BestSlotTopSlotsItem {
+  date: string;
+  timeBlock: string;
+  participantCount: number;
+  absentNames: string[];
+}
+
 export interface BestSlot {
   /** @nullable */
   date: string | null;
@@ -74,6 +81,7 @@ export interface BestSlot {
   totalParticipants: number;
   hasMatch?: boolean;
   absentNames?: string[];
+  topSlots?: BestSlotTopSlotsItem[];
 }
 
 export interface Activity {

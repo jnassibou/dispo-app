@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, eventsTable, participantsTable, availabilitySlotsTable } from "@workspace/db";
 import {
   ListAvailabilitiesParams,
@@ -12,6 +12,8 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+const TIME_BLOCK_ORDER = ["morning", "afternoon", "evening", "night"];
 
 router.get("/events/:shareCode/availabilities", async (req, res): Promise<void> => {
   const rawCode = Array.isArray(req.params.shareCode)
@@ -107,6 +109,12 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
     return;
   }
 
+  // Optional organizer bonus: participantId who gets +0.5 score boost
+  const rawOrganizerId = req.query.organizerParticipantId;
+  const organizerParticipantId = rawOrganizerId
+    ? parseInt(String(rawOrganizerId), 10)
+    : null;
+
   const [event] = await db
     .select()
     .from(eventsTable)
@@ -138,6 +146,7 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
         totalParticipants,
         hasMatch: false,
         absentNames: [],
+        topSlots: [],
       })
     );
     return;
@@ -151,14 +160,42 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
     slotMap[key].add(slot.participantId);
   }
 
-  const sorted = Object.entries(slotMap).sort(
-    (a, b) => b[1].size - a[1].size
-  );
+  // Sort with tie-breakers:
+  // 1. Score = count + 0.5 bonus if organizer is present
+  // 2. Chronological date (earlier first)
+  // 3. Time block order (morning → night)
+  const sorted = Object.entries(slotMap).sort((a, b) => {
+    const scoreA =
+      a[1].size +
+      (organizerParticipantId !== null && a[1].has(organizerParticipantId)
+        ? 0.5
+        : 0);
+    const scoreB =
+      b[1].size +
+      (organizerParticipantId !== null && b[1].has(organizerParticipantId)
+        ? 0.5
+        : 0);
+    if (scoreB !== scoreA) return scoreB - scoreA;
+
+    const [dateA, tbA] = a[0].split("|");
+    const [dateB, tbB] = b[0].split("|");
+    if (dateA !== dateB) return dateA.localeCompare(dateB);
+    return TIME_BLOCK_ORDER.indexOf(tbA) - TIME_BLOCK_ORDER.indexOf(tbB);
+  });
+
+  // Build top 3 response items
+  const topSlots = sorted.slice(0, 3).map(([key, presentIds]) => {
+    const [date, timeBlock] = key.split("|");
+    const absentNames = allParticipants
+      .filter((p) => !presentIds.has(p.id))
+      .map((p) => p.name);
+    return { date, timeBlock, participantCount: presentIds.size, absentNames };
+  });
+
   const best = sorted[0];
   const [bestDate, bestTimeBlock] = best[0].split("|");
   const presentIds = best[1];
   const participantCount = presentIds.size;
-
   const absentNames = allParticipants
     .filter((p) => !presentIds.has(p.id))
     .map((p) => p.name);
@@ -171,6 +208,7 @@ router.get("/events/:shareCode/best-slot", async (req, res): Promise<void> => {
       totalParticipants,
       hasMatch: participantCount === totalParticipants,
       absentNames,
+      topSlots,
     })
   );
 });

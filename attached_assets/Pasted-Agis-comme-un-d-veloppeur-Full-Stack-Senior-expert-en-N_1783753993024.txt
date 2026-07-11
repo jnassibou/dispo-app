@@ -1,0 +1,91 @@
+Agis comme un développeur Full-Stack Senior, expert en Next.js (App Router), Tailwind CSS, Framer Motion, et UI/UX Mobile-First pour la Gen Z.
+
+Ton objectif est de coder le MVP complet de l'application web "Dispo ?". C'est un outil d'organisation d'événements sans friction avec des fonctionnalités de viralité intégrées.
+
+🎨 1. DESIGN SYSTEM & UI
+
+Mobile-First strict : L'UI doit être parfaite sur un écran d'iPhone.
+
+Thème : Mode sombre profond (fond bg-neutral-950).
+
+Accents : Dégradés néons (Violet/Rose fluo) pour les éléments actifs.
+
+Formes : Boutons très arrondis (rounded-full ou rounded-3xl).
+
+Header Global (Sticky) : Présent sur toutes les pages. Texte "✌️ Dispo ?" avec un léger effet de glow violet. Pas d'émoji dans le logo texte principal.
+
+🛠 2. ARCHITECTURE DES PAGES & FONCTIONNALITÉS
+
+A. Écran de Connexion / Dashboard (La base)
+
+Crée une page /login avec une UI de "Magic Link" (champ email + bouton "Recevoir mon lien magique"). Pour ce MVP, simule la connexion (mock) pour rediriger vers /dashboard.
+
+Crée une page /dashboard affichant :
+
+La liste des "Événements en cours".
+
+Un gros bouton d'action principal : "Créer un événement 🚀".
+
+Une bannière ou un bouton premium stylé "Débloquer Dispo Max ✨" (Prix hybride : 1,99€ One-Shot ou 4,99€ Pass Saison).
+
+B. Page de Création (Vue Organisateur)
+
+Étape 1 : Choix du mode. 3 gros boutons conditionnels : "🗓️ Juste une date", "🎯 Juste une activité", "🔥 Les deux !".
+
+Étape 2 (Si Date) : Sélecteur de mois, puis sélection multiple de jours dans ce mois.
+
+Étape 3 : Nom de l'événement et choix de l'émoji.
+
+Génération : Un bouton final pour créer, qui affiche ensuite un lien de partage et un bouton utilisant navigator.share() pour inviter les potes.
+
+C. La Matrice de Disponibilités (Vue Invité)
+
+Grille inversée (Crucial) :
+
+Colonnes (X) : Les créneaux fixes (Matin 🌅, Aprem ☀️, Soir 🌇, Nuit 🌙).
+
+Lignes (Y) : Les dates sélectionnées par l'orga à la verticale (ex: Sam. 18 Juil.).
+
+Interaction : Au clic, la case s'allume en rose/violet vif avec un effet framer-motion (scale/bounce).
+
+Sticky Button : Un gros bouton "Sauvegarder ✨" en bas de l'écran.
+
+D. Module "On fait quoi ?" (Si Activité choisie)
+
+Si l'orga a choisi le mode "Activité", intègre une interface de swipe (style Tinder).
+
+Cartes d'activités (Resto, Ciné, Bowling) : Swipe droite (Chaud), Swipe gauche (Non).
+
+E. Algorithme de Résolution & Verdict (Le Match)
+
+Calcule le meilleur créneau avec des "Tie-breakers" (Poids mathématiques) :
+
+Score de base = nb de personnes dispos.
+
+Bonus si l'organisateur est dispo.
+
+En cas d'égalité, prends la date la plus proche chronologiquement.
+
+Gère les absences avec positivité : Ne mets pas de message d'erreur si on n'est pas à 100%. Affiche la meilleure date avec le texte dynamique : "Tout le monde est dispo sauf [Nom] 😅".
+
+F. Affichage des Résultats (/verdict)
+
+Affiche un Top 3 des meilleures options (Podium).
+
+Ajoute une Heatmap (La matrice en lecture seule) sous le Top 3 : vert/rose vif pour les cases où tout le monde est là, sombre pour les cases vides.
+
+Cache la section "Top Activités" si l'orga n'a demandé qu'une Date au départ.
+
+📸 3. LA FEATURE VIRALE : LE STICKER IMAGE
+
+Sur la page des Résultats, intègre la librairie html2canvas.
+
+Crée un composant React caché à l'écran, au format 9:16 (Story). Il contient : fond sombre néon, émoji, nom de l'event en gros, date gagnante, et "X/Y participants".
+
+Ajoute un bouton visible "Partager le Sticker 📸".
+
+Au clic, utilise html2canvas(element) pour transformer ce composant en image PNG.
+
+Appelle l'API native navigator.share({ files: [new File(...)] }) pour ouvrir le menu de partage du téléphone (Insta, Snap, etc.). Si navigator.share échoue, utilise un fallback pour déclencher le téléchargement de l'image (<a> download).
+
+Commence par coder l'architecture des routes Next.js, le Layout principal (Header), et génère la base de ces 5 écrans (Login, Dashboard, Create, Matrix, Verdict). Assure-toi que la navigation entre les pages fonctionne.

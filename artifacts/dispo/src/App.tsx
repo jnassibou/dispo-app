@@ -7,6 +7,8 @@ import { Route, Switch, Router as WouterRouter } from 'wouter';
 import Layout from '@/components/Layout';
 
 import Home from '@/pages/Home';
+import Login from '@/pages/Login';
+import Dashboard from '@/pages/Dashboard';
 import CreateEvent from '@/pages/CreateEvent';
 import EventHub from '@/pages/EventHub';
 import AvailabilityPicker from '@/pages/AvailabilityPicker';
@@ -28,6 +30,8 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/login" component={Login} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/create" component={CreateEvent} />
         <Route path="/event/:shareCode" component={EventHub} />
         <Route path="/event/:shareCode/availabilities" component={AvailabilityPicker} />
